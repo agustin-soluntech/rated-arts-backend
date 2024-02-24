@@ -1,0 +1,1 @@
+export const framings = ["Black", "White", "Unframed"];
