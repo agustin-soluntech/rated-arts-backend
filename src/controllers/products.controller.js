@@ -1,7 +1,7 @@
 import { Editions } from "../models/Editions.js";
-import { Sizes } from "../models/Sizes.js";
+import { Size } from "../models/Size.js";
 import { Products } from "../models/Products.js";
-import { Artists } from "../models/Artists.js";
+import { Artist } from "../models/Artist.js";
 import { framings } from "../utils/constants.js";
 
 const createVariants = (data, productsCount) => {
@@ -40,7 +40,9 @@ const createVariants = (data, productsCount) => {
 };
 
 const createShopifyProduct = async (data) => {
-  const productsCount = await Products.count({where: {artistId: data.artist.id}});
+  const productsCount = await Products.count({
+    where: { artistId: data.artist.id },
+  });
   const shopifyProduct = {
     product: {
       title: data.title,
@@ -129,10 +131,10 @@ export const createProducts = async (req, res) => {
     grouped[key].push(variant);
     return grouped;
   }, {});
-  
+
   for (let key in groupedVariants) {
     variants = groupedVariants[key].map((variant) => variant.id);
-    const newImage = '' //generate image
+    const newImage = ""; //generate image
     await createImageShopifyProduct(shopifyProduct.id, imageUrl, variants);
   }
 
