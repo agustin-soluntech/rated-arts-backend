@@ -3,10 +3,11 @@ import { Size } from "../models/Size.js";
 import { Products } from "../models/Products.js";
 import { Artist } from "../models/Artist.js";
 import { framings } from "../utils/constants.js";
-
-const createVariants = (data, productsCount) => {
-  function createSKU(artist, edition, size, frame, count) {
-    const initials = artist
+import uploadFile from "../utils/uploadFile.js";
+import { Op } from "sequelize";
+const createVariants = (productsCount, editions, sizes, artistName, price) => {
+  function createSKU(artistName, edition, size, frame, count) {
+    const initials = artistName
       .split(" ")
       .slice(0, 2)
       .map((e) => e[0].toUpperCase())
@@ -19,15 +20,21 @@ const createVariants = (data, productsCount) => {
   }
   const variants = [];
 
-  data.editions.forEach((edition) => {
-    data.sizes.forEach((size) => {
+  editions.forEach((edition) => {
+    sizes.forEach((size) => {
       framings.forEach((framing) => {
         variants.push({
           option1: edition,
           option2: size,
           option3: framing,
           price: price,
-          sku: createSKU(data.artist, edition, size, framing, productsCount),
+          sku: createSKU(
+            artistName,
+            edition.display,
+            size.display,
+            framing,
+            productsCount
+          ),
           inventory_management: "shopify",
           inventory_quantity: 1000,
           taxable: true,
@@ -39,25 +46,37 @@ const createVariants = (data, productsCount) => {
   return variants;
 };
 
-const createShopifyProduct = async (data) => {
+const createShopifyProduct = async (
+  data,
+  imageUrl,
+  artistName,
+  editions,
+  sizes
+) => {
   const productsCount = await Products.count({
-    where: { artistId: data.artist.id },
+    where: { ArtistId: data.artist },
   });
   const shopifyProduct = {
     product: {
       title: data.title,
       body_html: data.description,
-      vendor: data.artist.full_name,
+      vendor: artistName,
       template_suffix: 4,
-      variants: createVariants(data, productsCount),
+      variants: createVariants(
+        productsCount,
+        editions,
+        sizes,
+        artistName,
+        data.price
+      ),
       options: [
         {
           name: "Edition",
-          values: data.editions.map((edition) => edition.name),
+          values: editions.map((edition) => edition.display),
         },
         {
           name: "Print Size",
-          values: data.sizes.map((size) => size.display),
+          values: sizes.map((size) => size.display),
         },
         {
           name: "Framing",
@@ -66,9 +85,9 @@ const createShopifyProduct = async (data) => {
       ],
       images: [
         {
-          src: data.imageUrl,
+          src: imageUrl,
           variant_ids: [],
-          filename: data.imageUrl,
+          filename: imageUrl,
         },
       ],
     },
@@ -85,6 +104,13 @@ const createShopifyProduct = async (data) => {
       body: JSON.stringify(shopifyProduct),
     }
   );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `HTTP error! status: ${response.status}, message: ${errorData.message}`
+    );
+  }
 
   return response.json().body.product;
 };
@@ -112,7 +138,27 @@ const createImageShopifyProduct = async (productId, imageUrl, variants) => {
 };
 
 export const createProducts = async (req, res) => {
-  const shopifyProduct = await createShopifyProduct(req.body);
+  const artist = await Artist.findOne({ where: { id: req.body.artist } });
+
+  const editionIds = req.body.editions.split(",");
+  const editions = await Editions.findAll({
+    where: { id: { [Op.in]: editionIds } },
+    raw: true,
+  });
+
+  const sizeIds = req.body.sizes.split(",");
+  const sizes = await Size.findAll({
+    where: { id: { [Op.in]: sizeIds } },
+    raw: true,
+  });
+  const upload = await uploadFile(req.files.image, artist.dataValues.full_name);
+  const shopifyProduct = await createShopifyProduct(
+    req.body,
+    upload,
+    artist.dataValues.full_name,
+    editions,
+    sizes
+  );
   await Products.create({
     title: req.body.title,
     description: req.body.description,
