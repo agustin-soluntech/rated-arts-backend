@@ -24,8 +24,8 @@ const createVariants = (productsCount, editions, sizes, artistName, price) => {
     sizes.forEach((size) => {
       framings.forEach((framing) => {
         variants.push({
-          option1: edition,
-          option2: size,
+          option1: edition.display,
+          option2: size.display,
           option3: framing,
           price: price,
           sku: createSKU(
@@ -92,49 +92,57 @@ const createShopifyProduct = async (
       ],
     },
   };
-
-  const response = await fetch(
-    `${process.env.SHOPIFY_API_URL}/admin/api/2023-04/products.json`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
-      },
-      body: JSON.stringify(shopifyProduct),
-    }
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      `HTTP error! status: ${response.status}, message: ${errorData.message}`
+  try {
+    const response = await fetch(
+      `${process.env.SHOPIFY_API_URL}/admin/api/2023-04/products.json`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
+        },
+        body: JSON.stringify(shopifyProduct),
+      }
     );
-  }
 
-  return response.json().body.product;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `HTTP error! status: ${response.status}, message: ${errorData.message}`
+      );
+    } else {
+      const createdProduct = await response.json();
+      return createdProduct.product;
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
 };
 
 const createImageShopifyProduct = async (productId, imageUrl, variants) => {
-  const response = await fetch(
-    `${process.env.SHOPIFY_API_URL}/admin/api/2023-10/products/${productId}/images.json`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
-      },
-      body: JSON.stringify({
-        image: {
-          src: imageUrl,
-          variant_ids: variants,
-          filename: productId + ".jpg",
+  try {
+    const response = await fetch(
+      `${process.env.SHOPIFY_API_URL}/admin/api/2023-10/products/${productId}/images.json`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
         },
-      }),
-    }
-  );
-
-  return response.json();
+        body: JSON.stringify({
+          image: {
+            src: imageUrl,
+            variant_ids: variants,
+            filename: productId + ".jpg",
+          },
+        }),
+      }
+    );
+  
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+  }
 };
 
 export const createProducts = async (req, res) => {
@@ -162,7 +170,7 @@ export const createProducts = async (req, res) => {
   await Products.create({
     title: req.body.title,
     description: req.body.description,
-    image_url: req.body.imageUrl,
+    image_url: upload,
     price: req.body.price,
     quantity: 1000,
     artistId: req.body.artist.id,
