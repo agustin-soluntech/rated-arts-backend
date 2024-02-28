@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
+import { streamCollector } from "@aws-sdk/stream-collector-node";
 import fs from "fs";
 
 const client = new S3Client({
@@ -13,17 +14,23 @@ const client = new S3Client({
   },
 });
 
-const downloadFile = async (fileName) => {
-  const s3Url = "https://s3.amazonaws.com/questionimagesjs/";
+export const downloadFile = async (fileName) => {
+  const s3Url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: fileName,
   });
-  const result = await client.send(command);
-  result.Body.pipe(fs.createWriteStream(`./${fileName}`));
-  console.log(result);
+  try {
+    const { Body } = await client.send(command);
+    // Collect the stream into a buffer
+    const buffer = await streamCollector(Body);
+    return buffer; // This is your file as a buffer
+  } catch (error) {
+    console.error("Error getting file as buffer from S3:", error);
+    throw error;
+  }
 };
-const uploadFile = async (file, artistName) => {
+export const uploadFile = async (file, artistName) => {
   const stream = fs.createReadStream(file.tempFilePath);
   const folder = artistName + "/";
   const uploadParams = {
@@ -37,4 +44,17 @@ const uploadFile = async (file, artistName) => {
   return url;
 };
 
-export default uploadFile;
+export const uploadImage = async (buffer, name, artistName, edition) => {
+  const folder = artistName + "/";
+  const vers = edition? `${edition}_` : "";
+  const uploadParams = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: folder + vers + name,
+    Body: buffer,
+    ContentType: 'image/jpeg',
+  };
+  const command = new PutObjectCommand(uploadParams);
+  await client.send(command);
+  const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${folder}${file.name}`;
+  return url;
+};

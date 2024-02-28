@@ -3,8 +3,10 @@ import { Size } from "../models/Size.js";
 import { Products } from "../models/Products.js";
 import { Artist } from "../models/Artist.js";
 import { framings } from "../utils/constants.js";
-import uploadFile from "../utils/uploadFile.js";
+import { downloadFile, uploadFile, uploadImage } from '../utils/uploadFile.js';
 import { Op } from "sequelize";
+import sharp from "sharp";
+
 const createVariants = (productsCount, editions, sizes, artistName, price) => {
   function createSKU(artistName, edition, size, frame, count) {
     const initials = artistName
@@ -145,6 +147,30 @@ const createImageShopifyProduct = async (productId, imageUrl, variants) => {
   }
 };
 
+async function createFramedPhoto(file, frame) {
+  const frameTransparentWidth = 800; // Adjust based on your frame's dimensions
+  const frameTransparentHeight = 600;
+
+  const resizedPhotoBuffer = await sharp(file.tempFilePath)
+    .resize(frameTransparentWidth, frameTransparentHeight)
+    .toBuffer();
+
+  return sharp(frame)
+    .composite([{ input: resizedPhotoBuffer, gravity: 'centre' }])
+    .toBuffer();
+}
+
+async function processAndFramePhoto(file, artist, edition) {
+  try {
+    const frame = await downloadFile(`bg/${edition}.png`);
+    const framedPhotoBuffer = await createFramedPhoto(file, frame);
+
+    return await uploadImage(framedPhotoBuffer, file.name, artist.dataValues.full_name, edition);
+  } catch (err) {
+    console.error('Error processing photo:', err);
+  }
+}
+
 export const createProducts = async (req, res) => {
   const artist = await Artist.findOne({ where: { id: req.body.artist } });
 
@@ -159,7 +185,13 @@ export const createProducts = async (req, res) => {
     where: { id: { [Op.in]: sizeIds } },
     raw: true,
   });
+
   const upload = await uploadFile(req.files.image, artist.dataValues.full_name);
+  for (let edition of editions) {
+    await processAndFramePhoto(req.files.image, artist, edition.display+'Black');
+  }
+
+
   const shopifyProduct = await createShopifyProduct(
     req.body,
     upload,

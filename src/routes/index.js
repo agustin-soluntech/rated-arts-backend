@@ -3,7 +3,7 @@ import productsRouter from "./products.routes.js";
 import editionsRouter from "./editions.routes.js";
 import artistsRouter from "./artist.routes.js";
 import sizesRouter from "./size.routes.js";
-import uploadFile from "../utils/uploadFile.js";
+import {uploadFile} from "../utils/uploadFile.js";
 const router = express.Router();
 
 router.use("/products", productsRouter);
