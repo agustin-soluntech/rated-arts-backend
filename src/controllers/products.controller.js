@@ -159,6 +159,12 @@ export const createProducts = async (req, res) => {
     raw: true,
   });
   const upload = await uploadFile(req.files.image, artist.dataValues.full_name);
+  const upscaledImages = await upscaleImage(
+    upload,
+    req.body.imageWidth,
+    sizes,
+    artist.dataValues.full_name
+  );
   const shopifyProduct = await createShopifyProduct(
     req.body,
     upload,
