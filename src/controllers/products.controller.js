@@ -2,8 +2,8 @@ import { Editions } from "../models/Editions.js";
 import { Size } from "../models/Size.js";
 import { Products } from "../models/Products.js";
 import { Artist } from "../models/Artist.js";
-import { framings } from "../utils/constants.js";
-import { downloadFile, uploadFile, uploadImage } from '../utils/uploadFile.js';
+import { framesDetails, framings } from "../utils/constants.js";
+import { downloadFile, uploadFile, uploadImage } from "../utils/uploadFile.js";
 import { Op } from "sequelize";
 import sharp from "sharp";
 
@@ -140,34 +140,48 @@ const createImageShopifyProduct = async (productId, imageUrl, variants) => {
         }),
       }
     );
-  
-    return await response.json();
+
+    const imageRes = await response.json();
+    return imageRes;
   } catch (error) {
     console.error("Error:", error);
   }
 };
 
-async function createFramedPhoto(file, frame) {
-  const frameTransparentWidth = 800; // Adjust based on your frame's dimensions
-  const frameTransparentHeight = 600;
-
+async function createFramedPhoto(file, frame, frameDetails) {
   const resizedPhotoBuffer = await sharp(file.tempFilePath)
-    .resize(frameTransparentWidth, frameTransparentHeight)
+    .resize(frameDetails.width, frameDetails.height, { fit: "fill" })
     .toBuffer();
 
   return sharp(frame)
-    .composite([{ input: resizedPhotoBuffer, gravity: 'centre' }])
+    .composite([
+      {
+        input: resizedPhotoBuffer,
+        left: frameDetails.x, // X coordinate of the transparent area
+        top: frameDetails.y, // Y coordinate of the transparent area
+        //gravity: 'center',
+      },
+    ])
     .toBuffer();
 }
 
-async function processAndFramePhoto(file, artist, edition) {
+async function processAndFramePhoto(file, artist, edition, frameDetails) {
   try {
     const frame = await downloadFile(`bg/${edition}.png`);
-    const framedPhotoBuffer = await createFramedPhoto(file, frame);
+    const framedPhotoBuffer = await createFramedPhoto(
+      file,
+      frame,
+      frameDetails
+    );
 
-    return await uploadImage(framedPhotoBuffer, file.name, artist.dataValues.full_name, edition);
+    return await uploadImage(
+      framedPhotoBuffer,
+      file.name,
+      artist.dataValues.full_name,
+      edition
+    );
   } catch (err) {
-    console.error('Error processing photo:', err);
+    console.error("Error processing photo:", err);
   }
 }
 
@@ -187,10 +201,20 @@ export const createProducts = async (req, res) => {
   });
 
   const upload = await uploadFile(req.files.image, artist.dataValues.full_name);
-  for (let edition of editions) {
-    await processAndFramePhoto(req.files.image, artist, edition.display+'Black');
-  }
 
+  const variantsImages = {};
+  for (let edition of editions) {
+    for (let frame of framings) {
+      const frameDetails = framesDetails[frame];
+      variantsImages[`${edition.display}-${frame}`] =
+        await processAndFramePhoto(
+          req.files.image,
+          artist,
+          edition.display + frame,
+          frameDetails
+        );
+    }
+  }
 
   const shopifyProduct = await createShopifyProduct(
     req.body,
@@ -219,9 +243,12 @@ export const createProducts = async (req, res) => {
   }, {});
 
   for (let key in groupedVariants) {
-    variants = groupedVariants[key].map((variant) => variant.id);
-    const newImage = ""; //generate image
-    await createImageShopifyProduct(shopifyProduct.id, imageUrl, variants);
+    const variants = groupedVariants[key].map((variant) => variant.id);
+    await createImageShopifyProduct(
+      shopifyProduct.id,
+      variantsImages[key],
+      variants
+    );
   }
 
   res.send(shopifyProduct);

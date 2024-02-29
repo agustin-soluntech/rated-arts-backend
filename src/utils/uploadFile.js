@@ -41,20 +41,21 @@ export const uploadFile = async (file, artistName) => {
   const command = new PutObjectCommand(uploadParams);
   const result = await client.send(command);
   const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${folder}${file.name}`;
-  return url;
+  return url.replace(/ /g, "+");
 };
 
 export const uploadImage = async (buffer, name, artistName, edition) => {
   const folder = artistName + "/";
   const vers = edition? `${edition}_` : "";
+  const key = folder + vers + name;
   const uploadParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
-    Key: folder + vers + name,
+    Key: key,
     Body: buffer,
     ContentType: 'image/jpeg',
   };
   const command = new PutObjectCommand(uploadParams);
   await client.send(command);
-  const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${folder}${file.name}`;
-  return url;
+  const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+  return url.replace(/ /g, "+");
 };
