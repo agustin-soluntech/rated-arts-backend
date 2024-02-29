@@ -138,7 +138,6 @@ const createImageShopifyProduct = async (productId, imageUrl, variants) => {
         }),
       }
     );
-  
     return await response.json();
   } catch (error) {
     console.error("Error:", error);
