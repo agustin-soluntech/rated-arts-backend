@@ -6,6 +6,7 @@ import { framesDetails, framings } from "../utils/constants.js";
 import { downloadFile, uploadFile, uploadImage } from "../utils/uploadFile.js";
 import { Op } from "sequelize";
 import sharp from "sharp";
+import { upscaleImage } from "../utils/upscale.js";
 
 const createVariants = (productsCount, editions, sizes, artistName, price) => {
   function createSKU(artistName, edition, size, frame, count) {
@@ -165,7 +166,7 @@ async function createFramedPhoto(file, frame, frameDetails) {
     .toBuffer();
 }
 
-async function processAndFramePhoto(file, artist, edition, frameDetails) {
+async function processAndFramePhoto(file, artist, edition, frameDetails, productName) {
   try {
     const frame = await downloadFile(`bg/${edition}.png`);
     const framedPhotoBuffer = await createFramedPhoto(
@@ -178,7 +179,8 @@ async function processAndFramePhoto(file, artist, edition, frameDetails) {
       framedPhotoBuffer,
       file.name,
       artist.dataValues.full_name,
-      edition
+      edition,
+      productName
     );
   } catch (err) {
     console.error("Error processing photo:", err);
@@ -200,7 +202,14 @@ export const createProducts = async (req, res) => {
     raw: true,
   });
 
-  const upload = await uploadFile(req.files.image, artist.dataValues.full_name);
+  const upload = await uploadFile(req.files.image, req.body.title, artist.dataValues.full_name);
+  const upscaledImages = await upscaleImage(
+    upload,
+    req.body.imageWidth,
+    sizes,
+    req.body.title,
+    artist.dataValues.full_name
+  );
 
   const variantsImages = {};
   for (let edition of editions) {
@@ -211,7 +220,8 @@ export const createProducts = async (req, res) => {
           req.files.image,
           artist,
           edition.display + frame,
-          frameDetails
+          frameDetails,
+          req.body.title
         );
     }
   }

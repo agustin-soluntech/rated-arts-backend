@@ -5,6 +5,15 @@ import {
 } from "@aws-sdk/client-s3";
 import { streamCollector } from "@aws-sdk/stream-collector-node";
 import fs from "fs";
+import { Readable } from 'stream'; 
+
+const streamToBuffer = async (stream) => {
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk instanceof Buffer ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+};
 
 const client = new S3Client({
   region: process.env.AWS_REGION,
@@ -30,9 +39,9 @@ export const downloadFile = async (fileName) => {
     throw error;
   }
 };
-export const uploadFile = async (file, artistName) => {
+export const uploadFile = async (file, productName, artistName) => {
   const stream = fs.createReadStream(file.tempFilePath);
-  const folder = artistName + "/";
+  const folder = `${artistName}/${productName}/`;
   const uploadParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: folder + file.name,
@@ -44,10 +53,9 @@ export const uploadFile = async (file, artistName) => {
   return url.replace(/ /g, "+");
 };
 
-export const uploadImage = async (buffer, name, artistName, edition) => {
-  const folder = artistName + "/";
+export const uploadImage = async (buffer, name, artistName, edition, productName) => {
   const vers = edition? `${edition}_` : "";
-  const key = folder + vers + name;
+  const key = `${artistName}/${productName}/shopify/${vers}${name}`;
   const uploadParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
@@ -56,6 +64,21 @@ export const uploadImage = async (buffer, name, artistName, edition) => {
   };
   const command = new PutObjectCommand(uploadParams);
   await client.send(command);
+  const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+  return url.replace(/ /g, "+");
+};
+export const uploadFileFromUrl = async (fileUrl, artistName, fileName, productName) => {
+  const response = await fetch(fileUrl);
+  const file = await streamToBuffer(response.body);
+  const key = artistName + "/" + productName + "/" + fileName;
+  const uploadParams = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: key,
+    Body: file,
+    ContentType: 'image/jpg',
+  };
+  const command = new PutObjectCommand(uploadParams);
+  const result = await client.send(command);
   const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
   return url.replace(/ /g, "+");
 };
