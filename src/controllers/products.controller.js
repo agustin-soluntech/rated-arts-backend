@@ -205,7 +205,7 @@ export const createProducts = async (req, res) => {
   const upload = await uploadFile(req.files.image, req.body.title, artist.dataValues.full_name);
   const upscaledImages = await upscaleImage(
     upload,
-    req.body.imageWidth,
+    parseInt(req.body.width),
     sizes,
     req.body.title,
     artist.dataValues.full_name
