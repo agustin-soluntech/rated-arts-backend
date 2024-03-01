@@ -214,7 +214,7 @@ export const createProducts = async (req, res) => {
   const variantsImages = {};
   for (let edition of editions) {
     for (let frame of framings) {
-      const frameDetails = framesDetails[frame];
+      const frameDetails = framesDetails[edition.display][frame];
       variantsImages[`${edition.display}-${frame}`] =
         await processAndFramePhoto(
           req.files.image,
