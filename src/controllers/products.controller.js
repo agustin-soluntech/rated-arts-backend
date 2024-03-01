@@ -166,7 +166,13 @@ async function createFramedPhoto(file, frame, frameDetails) {
     .toBuffer();
 }
 
-async function processAndFramePhoto(file, artist, edition, frameDetails, productName) {
+async function processAndFramePhoto(
+  file,
+  artist,
+  edition,
+  frameDetails,
+  productName
+) {
   try {
     const frame = await downloadFile(`bg/${edition}.png`);
     const framedPhotoBuffer = await createFramedPhoto(
@@ -202,7 +208,11 @@ export const createProducts = async (req, res) => {
     raw: true,
   });
 
-  const upload = await uploadFile(req.files.image, req.body.title, artist.dataValues.full_name);
+  const upload = await uploadFile(
+    req.files.image,
+    req.body.title,
+    artist.dataValues.full_name
+  );
   const upscaledImages = await upscaleImage(
     upload,
     parseInt(req.body.width),
