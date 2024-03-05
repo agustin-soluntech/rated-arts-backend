@@ -66,5 +66,5 @@ const reduceAndUploadImage = async (imageUrl, artistName, width, size, productNa
     const response = await axios.request(config);
     imageUrl = response.data.data.url;
   }
-  await uploadFileFromUrl(imageUrl, artistName, size.display.replace(/\s+/g, '')+'.jpg', productName);
+  return await uploadFileFromUrl(imageUrl, artistName, size.display.replace(/\s+/g, '')+'.jpg', productName);
 };

@@ -5,7 +5,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { streamCollector } from "@aws-sdk/stream-collector-node";
 import fs from "fs";
-import { Readable } from 'stream'; 
+import fetch from "node-fetch";
 
 const streamToBuffer = async (stream) => {
   const chunks = [];
