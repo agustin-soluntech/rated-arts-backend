@@ -10,8 +10,8 @@ dotenv.config();
 const port = process.env.PORT || 3000;
 async function main() {
   try {
-    //Uncomment the following line to reset the database
-    //await sequelize.sync({ force: true });
+    // Uncomment the following line to reset the database
+    // await sequelize.sync({ force: true });
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
