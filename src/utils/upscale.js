@@ -8,9 +8,7 @@ export const upscaleImage = async (imageUrl, imageWidth, sizes, productName, art
   const orderedSizes = sizes.sort((a, b) => b.width - a.width);
   if (orderedSizes[0].width <= imageWidth) {
     for (let size of orderedSizes) {
-      imagesUrl.push(
-        await reduceAndUploadImage(imageUrl, artistName, imageWidth, size, productName)
-      );
+      imagesUrl[size.id] = await reduceAndUploadImage(imageUrl, artistName, imageWidth, size, productName);
     }
   } else {
     const data = new FormData();
@@ -31,15 +29,13 @@ export const upscaleImage = async (imageUrl, imageWidth, sizes, productName, art
     };
     const response = await axios.request(config);
     for (let size of orderedSizes) {
-      imagesUrl.push(
-        await reduceAndUploadImage(
-          response.data.data.url,
-          artistName,
-          orderedSizes[0].width,
-          size,
-          productName
-        )
-      );
+      imagesUrl[size.id] = await reduceAndUploadImage(
+        response.data.data.url,
+        artistName,
+        orderedSizes[0].width,
+        size,
+        productName
+      )
     }
   }
   return imagesUrl;
@@ -66,5 +62,5 @@ const reduceAndUploadImage = async (imageUrl, artistName, width, size, productNa
     const response = await axios.request(config);
     imageUrl = response.data.data.url;
   }
-  await uploadFileFromUrl(imageUrl, artistName, size.display.replace(/\s+/g, '')+'.jpg', productName);
+  return await uploadFileFromUrl(imageUrl, artistName, size.display.replace(/\s+/g, '')+'.jpg', productName);
 };

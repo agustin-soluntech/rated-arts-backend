@@ -8,8 +8,20 @@ export const LineItems = sequelize.define('line_items', {
         primaryKey: true,
         autoIncrement: true,
     },
-    title: {
+    name: {
         type: DataTypes.STRING,
+        allowNull: false,
+    },
+    order_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    product_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    variant_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
     quantity: {
@@ -18,30 +30,6 @@ export const LineItems = sequelize.define('line_items', {
     },
     price: {
         type: DataTypes.FLOAT,
-        allowNull: false,
-    },
-    size: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    type: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    frames: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    item_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    sku: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    order_id: {
-        type: DataTypes.INTEGER,
         allowNull: false,
     },
 });

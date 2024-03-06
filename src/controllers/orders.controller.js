@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize, or } from 'sequelize';
 import { Customers } from '../models/Customers.js';
 import { LineItems } from '../models/LineItems.js';
 import { Orders } from '../models/Orders.js';
@@ -75,17 +75,24 @@ export const createOrder = async (req, res) => {
           currency: orderData.currency,
           customer_id: customer.id,
         }, { transaction });
+
+        const lineItems = await orderData.line_items.map((lineItem) => {
+          return {
+            id: lineItem.id,
+            name: lineItem.name,
+            order_id: order.id,
+            product_id: lineItem.product_id,
+            variant_id: lineItem.variant_id,
+            quantity: lineItem.quantity ?? 1,
+            price: lineItem.price ?? 0,
+          };
+        });
+
+        await LineItems.bulkCreate(lineItems, { transaction });
+        return order;
       },
     );
-    const order = await Orders.create({
-      id: orderData.id,
-      order_number: orderData.order_number,
-      created_at: orderData.created_at,
-      total: orderData.total,
-      currency: orderData.currency,
-      customer_id: orderData.customer_id,
-    });
-    res.status(201).json(order);
+    res.status(201).json(transaction);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

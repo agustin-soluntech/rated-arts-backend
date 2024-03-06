@@ -5,12 +5,14 @@ import artistsRouter from "./artist.routes.js";
 import sizesRouter from "./size.routes.js";
 import {uploadFile} from "../utils/uploadFile.js";
 import moment from "moment";
+import fetch from "node-fetch";
 const router = express.Router();
 
 router.use("/products", productsRouter);
 router.use("/editions", editionsRouter);
 router.use("/artists", artistsRouter);
 router.use("/sizes", sizesRouter);
+router.use("/orders", ordersRouter);
 
 //make a route to upload files to s3
 router.post("/upload", async (req, res) => {
@@ -24,7 +26,7 @@ router.post("/upload", async (req, res) => {
   }
 });
 
-router.get("/orders", async (req, res) => {
+/*router.get("/orders", async (req, res) => {
   try {
     let response = await fetch(
       `${process.env.SHOPIFY_API_URL}/admin/api/2023-04/orders.json`,
@@ -103,6 +105,6 @@ router.get("/orders", async (req, res) => {
   } catch (error) {
     console.log(error);
   }
-});
+});*/
 
 export default router;
