@@ -7,6 +7,7 @@ import { downloadFile, uploadFile, uploadImage } from "../utils/uploadFile.js";
 import { Op } from "sequelize";
 import sharp from "sharp";
 import { upscaleImage } from "../utils/upscale.js";
+import fetch from "node-fetch";
 
 const createVariants = (productsCount, editions, sizes, artistName, price) => {
   function createSKU(artistName, edition, size, frame, count) {

@@ -5,6 +5,7 @@ import artistsRouter from "./artist.routes.js";
 import sizesRouter from "./size.routes.js";
 import {uploadFile} from "../utils/uploadFile.js";
 import moment from "moment";
+import fetch from "node-fetch";
 const router = express.Router();
 
 router.use("/products", productsRouter);
