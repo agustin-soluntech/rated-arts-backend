@@ -40,7 +40,7 @@ export const Products = sequelize.define("products", {
 Products.belongsToMany(Sizes, { through: "ProductSize" });
 Sizes.belongsToMany(Products, { through: "ProductSize" });
 
-Products.belongsTo(Artists, { as: "Artist" });
+Products.belongsTo(Artists, { as: "Artist", foreignKey: "artist_id"});
 
 Products.hasMany(LineItems, { as: "LineItems", foreignKey: "product_id" });
 Products.hasMany(ProductImages, {
