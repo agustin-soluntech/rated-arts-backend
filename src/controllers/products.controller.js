@@ -113,16 +113,19 @@ export const createProductAndVariants = async (
   const sizes = await Sizes.findAll({
     raw: true,
   });
-  const artist = await Artists.findOne({
+  let artist = await Artists.findOne({
     where: { full_name: shopifyProduct.vendor },
     raw: true,
   });
+  if (!artist && shopifyProduct.vendor && shopifyProduct.vendor !== '') {
+    artist = await Artists.create({ full_name: shopifyProduct.vendor }, { transaction });
+  }
   const product = await Products.create(
     {
       id: shopifyProduct.id,
       title: body?.title ?? shopifyProduct.title,
       description: body?.description ?? shopifyProduct.body_html,
-      image_url: imageUrl ?? shopifyProduct.images[0].src,
+      image_url: imageUrl ?? shopifyProduct.images[0].src ?? '',
       price: body?.price ?? shopifyProduct.variants[0].price,
       quantity: 1000,
       artist_id: artist.id,
@@ -136,7 +139,7 @@ export const createProductAndVariants = async (
         title: variant.title,
         product_id: product.id,
         option1: variant.option1,
-        option2: variant.option2,
+        option2: variant.option2.replace(/"/g, ''),
         option3: variant.option3,
         price: variant.price,
         sku: variant.sku,
@@ -144,7 +147,7 @@ export const createProductAndVariants = async (
         edition_id: editions.find(
           (edition) => edition.display === variant.option1
         ).id,
-        size_id: sizes.find((size) => size.display === variant.option2).id,
+        size_id: sizes.find((size) => size.display === variant.option2.replace(/"/g, '')).id,
         created_at: variant.created_at,
         updated_at: variant.updated_at,
       };
