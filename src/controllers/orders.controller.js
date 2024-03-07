@@ -3,7 +3,10 @@ import { Customers } from "../models/Customers.js";
 import { LineItems } from "../models/LineItems.js";
 import { Orders } from "../models/Orders.js";
 import { getProductById } from "../utils/shopify.js";
-import { createProductAndVariants, findMissingProducts } from "./products.controller.js";
+import {
+  createProductAndVariants,
+  findMissingProducts,
+} from "./products.controller.js";
 
 export const getOrders = async (req, res) => {
   const limit = req.query.limit;
@@ -54,9 +57,11 @@ export const createOrder = async (req, res) => {
   const orderData = req.body;
   try {
     const transaction = await sequelize.transaction(async (transaction) => {
-      const missingProducts = await findMissingProducts([... new Set(orderData.line_items.map((lineItem) => lineItem.product_id))]);
+      const missingProducts = await findMissingProducts([
+        ...new Set(orderData.line_items.map((lineItem) => lineItem.product_id)),
+      ]);
       if (missingProducts.length > 0) {
-        for(let productId of missingProducts) {
+        for (let productId of missingProducts) {
           const product = getProductById(productId);
           await createProductAndVariants(product, transaction, null, null);
         }

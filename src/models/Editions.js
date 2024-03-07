@@ -21,10 +21,8 @@ export const Editions = sequelize.define(
   }
 );
 
-
-Variants.belongsTo(Editions, { as: 'Edition', foreignKey: 'edition_id'});
-Editions.belongsToMany(Products, { through: 'ProductEdition' });
+Variants.belongsTo(Editions, { as: "Edition", foreignKey: "edition_id" });
+Editions.belongsToMany(Products, { through: "ProductEdition" });
 Editions.hasMany(Variants, { as: "Variants", foreignKey: "edition_id" });
 
-
-Products.belongsToMany(Editions, { through: 'ProductEdition' });
+Products.belongsToMany(Editions, { through: "ProductEdition" });

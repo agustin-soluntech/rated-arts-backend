@@ -4,9 +4,7 @@ import editionsRouter from "./editions.routes.js";
 import artistsRouter from "./artist.routes.js";
 import sizesRouter from "./size.routes.js";
 import ordersRouter from "./orders.routes.js";
-import {uploadFile} from "../utils/uploadFile.js";
-import moment from "moment";
-import fetch from "node-fetch";
+import { uploadFile } from "../utils/uploadFile.js";
 const router = express.Router();
 
 router.use("/products", productsRouter);

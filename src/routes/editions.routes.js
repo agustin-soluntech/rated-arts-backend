@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import {getEditions} from '../controllers/editions.controller.js'
+import { Router } from "express";
+import { getEditions } from "../controllers/editions.controller.js";
 
 const router = Router();
 
-router.get('/', getEditions)
+router.get("/", getEditions);
 
 export default router;

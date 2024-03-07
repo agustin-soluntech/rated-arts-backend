@@ -163,8 +163,6 @@ export const findMissingProducts = async (products) => {
   return products.filter((product) => !existingProductsIds.includes(product));
 };
 
-
-
 export const createProducts = async (req, res) => {
   try {
     const artist = await Artists.findOne({ where: { id: req.body.artist } });
@@ -200,7 +198,12 @@ export const createProducts = async (req, res) => {
     );
 
     const product = await sequelize.transaction(async (transaction) => {
-      return await createProductAndVariants(shopifyProduct, transaction, req.body, upload);
+      return await createProductAndVariants(
+        shopifyProduct,
+        transaction,
+        req.body,
+        upload
+      );
     });
     const variantsImages = await createVariantsImages(
       req.files.image,

@@ -2,13 +2,25 @@ import { uploadFileFromUrl } from "./uploadFile.js";
 import axios from "axios";
 import FormData from "form-data";
 
-export const upscaleImage = async (imageUrl, imageWidth, sizes, productName, artistName) => {
+export const upscaleImage = async (
+  imageUrl,
+  imageWidth,
+  sizes,
+  productName,
+  artistName
+) => {
   let imagesUrl = [];
   // order the size from largest to smallest
   const orderedSizes = sizes.sort((a, b) => b.width - a.width);
   if (orderedSizes[0].width <= imageWidth) {
     for (let size of orderedSizes) {
-      imagesUrl[size.id] = await reduceAndUploadImage(imageUrl, artistName, imageWidth, size, productName);
+      imagesUrl[size.id] = await reduceAndUploadImage(
+        imageUrl,
+        artistName,
+        imageWidth,
+        size,
+        productName
+      );
     }
   } else {
     const data = new FormData();
@@ -35,13 +47,19 @@ export const upscaleImage = async (imageUrl, imageWidth, sizes, productName, art
         orderedSizes[0].width,
         size,
         productName
-      )
+      );
     }
   }
   return imagesUrl;
 };
 
-const reduceAndUploadImage = async (imageUrl, artistName, width, size, productName) => {
+const reduceAndUploadImage = async (
+  imageUrl,
+  artistName,
+  width,
+  size,
+  productName
+) => {
   if (size.width < width) {
     const form = new FormData();
     form.append("image_url", imageUrl);
@@ -62,5 +80,10 @@ const reduceAndUploadImage = async (imageUrl, artistName, width, size, productNa
     const response = await axios.request(config);
     imageUrl = response.data.data.url;
   }
-  return await uploadFileFromUrl(imageUrl, artistName, size.display.replace(/\s+/g, '')+'.jpg', productName);
+  return await uploadFileFromUrl(
+    imageUrl,
+    artistName,
+    size.display.replace(/\s+/g, "") + ".jpg",
+    productName
+  );
 };

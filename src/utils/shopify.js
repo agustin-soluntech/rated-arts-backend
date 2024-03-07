@@ -1,13 +1,7 @@
 import { framings } from "../utils/constants.js";
 import fetch from "node-fetch";
 
-const createVariants = (
-  productsCount,
-  editions,
-  sizes,
-  artistName,
-  price
-) => {
+const createVariants = (productsCount, editions, sizes, artistName, price) => {
   function createSKU(artistName, edition, size, frame, count) {
     const initials = artistName
       .split(" ")
@@ -54,7 +48,7 @@ export const createShopifyProduct = async (
   artistName,
   editions,
   sizes,
-  productsCount,
+  productsCount
 ) => {
   const shopifyProduct = {
     product: {
@@ -159,7 +153,7 @@ export const groupVariants = (variants) => {
     grouped[key].push(variant);
     return grouped;
   }, {});
-}
+};
 
 export const getOrderById = async (id) => {
   try {
@@ -278,4 +272,4 @@ export const getProductById = async (id) => {
   } catch (error) {
     console.log(error);
   }
-}
+};
