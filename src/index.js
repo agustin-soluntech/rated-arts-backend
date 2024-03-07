@@ -1,10 +1,15 @@
 import dotenv from "dotenv";
 import app from "./app.js";
 import { sequelize } from "./database/database.js";
-import "./models/Products.js";
-import "./models/Artist.js";
-import "./models/Size.js";
+import "./models/Artists.js";
+import "./models/Customers.js";
 import "./models/Editions.js";
+import "./models/LineItems.js";
+import "./models/Orders.js";
+import "./models/ProductImages.js";
+import "./models/Products.js";
+import "./models/Sizes.js";
+import "./models/Variants.js";
 dotenv.config();
 
 const port = process.env.PORT || 3000;

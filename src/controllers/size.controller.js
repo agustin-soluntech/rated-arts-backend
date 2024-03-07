@@ -1,11 +1,11 @@
-import { Size } from "../models/Size.js";
+import { Sizes } from "../models/Sizes.js";
 
 export const getProportionalSizes = async (req, res) => {
   const { width, height } = req.body;
   const aspectRatio = width / height;
 
   try {
-    const allSizes = await Size.findAll({
+    const allSizes = await Sizes.findAll({
       raw: true,
     });
 

@@ -1,6 +1,6 @@
-import { Artist } from "../models/Artist.js";
+import { Artists } from "../models/Artists.js";
 
 export const getAllArtists = async (req, res) => {
-  const artist = await Artist.findAll();
+  const artist = await Artists.findAll();
   res.json(artist);
 };

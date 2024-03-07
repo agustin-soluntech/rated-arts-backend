@@ -53,21 +53,32 @@ export const uploadFile = async (file, productName, artistName) => {
   return url.replace(/ /g, "+");
 };
 
-export const uploadImage = async (buffer, name, artistName, edition, productName) => {
-  const vers = edition? `${edition}_` : "";
+export const uploadImage = async (
+  buffer,
+  name,
+  artistName,
+  edition,
+  productName
+) => {
+  const vers = edition ? `${edition}_` : "";
   const key = `${artistName}/${productName}/shopify/${vers}${name}`;
   const uploadParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
     Body: buffer,
-    ContentType: 'image/jpeg',
+    ContentType: "image/jpeg",
   };
   const command = new PutObjectCommand(uploadParams);
   await client.send(command);
   const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
   return url.replace(/ /g, "+");
 };
-export const uploadFileFromUrl = async (fileUrl, artistName, fileName, productName) => {
+export const uploadFileFromUrl = async (
+  fileUrl,
+  artistName,
+  fileName,
+  productName
+) => {
   const response = await fetch(fileUrl);
   const file = await streamToBuffer(response.body);
   const key = artistName + "/" + productName + "/" + fileName;
@@ -75,7 +86,7 @@ export const uploadFileFromUrl = async (fileUrl, artistName, fileName, productNa
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
     Body: file,
-    ContentType: 'image/jpg',
+    ContentType: "image/jpg",
   };
   const command = new PutObjectCommand(uploadParams);
   const result = await client.send(command);
