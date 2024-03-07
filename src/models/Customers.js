@@ -4,7 +4,7 @@ import { Orders } from './Orders.js';
 
 export const Customers = sequelize.define('customers', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
     },
@@ -36,7 +36,7 @@ export const Customers = sequelize.define('customers', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    state: {
+    province: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -49,6 +49,3 @@ export const Customers = sequelize.define('customers', {
         allowNull: false,
     },
 });
-
-Customers.hasMany(Orders, { as: 'Orders' });
-

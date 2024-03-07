@@ -1,14 +1,14 @@
-import {DataTypes} from 'sequelize'
-import {sequelize} from '../database/database.js'
-import { Size } from './Size.js';
-import { Editions } from './Editions.js';
-import { Artist } from './Artist.js';
-import { Variants } from './Variants.js';
+import {DataTypes} from 'sequelize';
+import {sequelize} from '../database/database.js';
+import { Sizes } from './Sizes.js';
+import { Artists } from './Artists.js';
+import { LineItems } from './LineItems.js';
+import { ProductImages } from './ProductImages.js';
 
 
 export const Products = sequelize.define('products', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
     },
@@ -29,23 +29,24 @@ export const Products = sequelize.define('products', {
         allowNull: false,
     },
     quantity: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
     },
     artist_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
     },
 })
 
-Products.belongsToMany(Size, { through: 'ProductSize' });
-Size.belongsToMany(Products, { through: 'ProductSize' });
+Products.belongsToMany(Sizes, { through: 'ProductSize' });
+Sizes.belongsToMany(Products, { through: 'ProductSize' });
 
-Products.belongsToMany(Editions, { through: 'ProductEdition' });
-Editions.belongsToMany(Products, { through: 'ProductEdition' });
+Products.belongsTo(Artists, { as: 'Artist' });
 
+Products.hasMany(LineItems, { as: 'LineItems', foreignKey: 'product_id' });
+Products.hasMany(ProductImages, { as: 'ProductImages', foreignKey: 'product_id' });
 
-Products.belongsTo(Artist, { as: 'Artist' });
-Artist.hasOne(Products, { as: 'Product' });
+Artists.hasMany(Products, { as: 'Products', foreignKey: 'artist_id'});
 
-Products.hasMany(Variants, { as: 'Variants' });
+LineItems.belongsTo(Products, { as: 'Product', foreignKey: 'product_id'});
+ProductImages.belongsTo(Products, { as: 'Product', foreignKey: 'product_id' });

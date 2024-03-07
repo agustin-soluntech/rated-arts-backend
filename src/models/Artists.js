@@ -1,9 +1,10 @@
 import {DataTypes} from 'sequelize'
 import {sequelize} from '../database/database.js'
+import { Products } from './Products.js'
 
-export const Artist = sequelize.define('artist', {
+export const Artists = sequelize.define('artists', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
     },
@@ -12,5 +13,3 @@ export const Artist = sequelize.define('artist', {
         allowNull: false,
     },
 })
-
-//TODO: add users relationship

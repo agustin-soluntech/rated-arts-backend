@@ -160,3 +160,122 @@ export const groupVariants = (variants) => {
     return grouped;
   }, {});
 }
+
+export const getOrderById = async (id) => {
+  try {
+    let response = await fetch(
+      `${process.env.SHOPIFY_API_URL}/admin/api/2023-04/orders/${id}.json`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
+        },
+      }
+    );
+    const parsedResponse = await response.json();
+    return parsedResponse;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getOrders = async () => {
+  try {
+    let response = await fetch(
+      `${process.env.SHOPIFY_API_URL}/admin/api/2023-04/orders.json`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
+        },
+      }
+    );
+    const parsedResponse = await response.json();
+
+    const ordersId = parsedResponse.orders.map((order) => {
+      return order.id;
+    });
+
+    let responseOrderDetails = await Promise.all(
+      ordersId.map((id) =>
+        fetch(
+          `${process.env.SHOPIFY_API_URL}/admin/api/2023-04/orders/${id}.json`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
+            },
+          }
+        )
+      )
+    );
+
+    const parsedResponseOrderDetails = await Promise.all(
+      responseOrderDetails.map((res) => res.json())
+    );
+
+    const mappedOrders = parsedResponseOrderDetails.map((order) => {
+      return {
+        id: order.order.id ?? "",
+        date: order.order.created_at
+          ? moment(order.order.created_at).format("MMM D [at] h:mm a")
+          : "",
+        total: order.order.total_price ?? 0,
+        lineItems: order.order.line_items
+          ? order.order.line_items.map((item) => {
+              const parts = item.name.split(" - ");
+              const name = parts[0];
+              const [type, size, frames] = parts[1].split(" / ");
+              return {
+                title: name ?? "",
+                quantity: item.quantity ?? "",
+                price: item.price ?? "",
+                size: size ?? "",
+                type: type ?? "",
+                frames: frames ?? "",
+                itemId: item.id ?? "",
+                sku: item.sku ?? "",
+              };
+            })
+          : [],
+        customerInfo: order.order.billing_address
+          ? {
+              name: order.order.billing_address.name ?? "",
+              phone: order.order.billing_address.phone ?? "",
+              address: order.order.billing_address.address1 ?? "",
+              city: order.order.billing_address.city ?? "",
+              province: order.order.billing_address.province ?? "",
+              zip: order.order.billing_address.zip ?? "",
+              country: order.order.billing_address.country ?? "",
+            }
+          : {},
+      };
+    });
+    console.log(mappedOrders[0]);
+    return mappedOrders;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getProductById = async (id) => {
+  try {
+    let response = await fetch(
+      `${process.env.SHOPIFY_API_URL}/admin/api/2023-04/products/${id}.json`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
+        },
+      }
+    );
+    const parsedResponse = await response.json();
+    return parsedResponse;
+  } catch (error) {
+    console.log(error);
+  }
+}

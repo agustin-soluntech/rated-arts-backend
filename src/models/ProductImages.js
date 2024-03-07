@@ -1,9 +1,10 @@
-import {DataTypes} from 'sequelize'
-import {sequelize} from '../database/database.js'
+import {DataTypes} from 'sequelize';
+import {sequelize} from '../database/database.js';
+import { Sizes } from './Sizes.js';
 
 export const ProductImages = sequelize.define('product_images', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
     },
@@ -12,11 +13,13 @@ export const ProductImages = sequelize.define('product_images', {
         allowNull: false,
     },
     product_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
     },
     size_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
     },
 });
+
+ProductImages.belongsTo(Sizes, { as: 'Size', foreignKey: 'size_id' });

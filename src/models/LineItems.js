@@ -1,10 +1,12 @@
 import {DataTypes} from 'sequelize'
 import {sequelize} from '../database/database.js'
 import { Orders } from './Orders.js';
+import { Products } from './Products.js';
+import { Variants } from './Variants.js';
 
 export const LineItems = sequelize.define('line_items', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
     },
@@ -13,15 +15,15 @@ export const LineItems = sequelize.define('line_items', {
         allowNull: false,
     },
     order_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
     },
     product_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
     },
     variant_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
     },
     quantity: {
@@ -34,4 +36,6 @@ export const LineItems = sequelize.define('line_items', {
     },
 });
 
-LineItems.belongsTo(Orders, { as: 'Order' });
+LineItems.belongsTo(Orders, { as: 'Order', foreignKey: 'order_id'});
+
+Orders.hasMany(LineItems, { as: 'LineItems', foreignKey: 'order_id'});
