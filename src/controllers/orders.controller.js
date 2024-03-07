@@ -62,11 +62,11 @@ export const createOrder = async (req, res) => {
       ]);
       if (missingProducts.length > 0) {
         for (let productId of missingProducts) {
-          const product = getProductById(productId);
+          const product = await getProductById(productId);
           await createProductAndVariants(product, transaction, null, null);
         }
       }
-      const customer = await Customers.create(
+      await Customers.upsert(
         {
           id: orderData.customer.id,
           first_name: orderData.billing_address.first_name ?? "",
@@ -82,13 +82,14 @@ export const createOrder = async (req, res) => {
         },
         { transaction }
       );
+
       const order = await Orders.create(
         {
           id: orderData.id,
           order_number: orderData.order_number,
           total: orderData.total_price,
           currency: orderData.currency,
-          customer_id: customer.id,
+          customer_id: orderData.customer.id,
           created_at: orderData.created_at,
         },
         { transaction }
@@ -105,8 +106,8 @@ export const createOrder = async (req, res) => {
           price: lineItem.price ?? 0,
         };
       });
-
       await LineItems.bulkCreate(lineItems, { transaction });
+
       return order;
     });
     res.status(201).json(transaction);

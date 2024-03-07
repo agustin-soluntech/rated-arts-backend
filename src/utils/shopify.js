@@ -268,7 +268,7 @@ export const getProductById = async (id) => {
       }
     );
     const parsedResponse = await response.json();
-    return parsedResponse;
+    return parsedResponse.product;
   } catch (error) {
     console.log(error);
   }
