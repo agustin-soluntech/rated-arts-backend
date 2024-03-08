@@ -16,15 +16,15 @@ export const LineItems = sequelize.define("line_items", {
   },
   order_id: {
     type: DataTypes.BIGINT,
-    allowNull: false,
+    allowNull: true,
   },
   product_id: {
     type: DataTypes.BIGINT,
-    allowNull: false,
+    allowNull: true,
   },
   variant_id: {
     type: DataTypes.BIGINT,
-    allowNull: false,
+    allowNull: true,
   },
   quantity: {
     type: DataTypes.INTEGER,
@@ -32,6 +32,30 @@ export const LineItems = sequelize.define("line_items", {
   },
   price: {
     type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  size: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  type: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  frames: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  imageUrl: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  resizedImageUrl: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  sku: {
+    type: DataTypes.STRING,
     allowNull: false,
   },
 });

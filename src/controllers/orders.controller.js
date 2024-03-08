@@ -2,6 +2,8 @@ import { sequelize } from "../database/database.js";
 import { Customers } from "../models/Customers.js";
 import { LineItems } from "../models/LineItems.js";
 import { Orders } from "../models/Orders.js";
+import { Products } from "../models/Products.js";
+import { Variants } from "../models/Variants.js";
 import { getProductById } from "../utils/shopify.js";
 import {
   createProductAndVariants,
@@ -17,6 +19,12 @@ export const getOrders = async (req, res) => {
         {
           model: LineItems,
           as: "LineItems",
+          include: [
+            {
+              model: Products,
+              as: "Product",
+            },
+          ],
         },
         {
           model: Customers,
@@ -40,6 +48,12 @@ export const getOrderById = async (req, res) => {
         {
           model: LineItems,
           as: "LineItems",
+          include: [
+            {
+              model: Variants,
+              as: "Variant",
+            },
+          ],
         },
         {
           model: Customers,
@@ -57,15 +71,6 @@ export const createOrder = async (req, res) => {
   const orderData = req.body;
   try {
     const transaction = await sequelize.transaction(async (transaction) => {
-      const missingProducts = await findMissingProducts([
-        ...new Set(orderData.line_items.map((lineItem) => lineItem.product_id)),
-      ]);
-      if (missingProducts.length > 0) {
-        for (let productId of missingProducts) {
-          const product = await getProductById(productId);
-          await createProductAndVariants(product, transaction, null, null);
-        }
-      }
       await Customers.upsert(
         {
           id: orderData.customer.id,
@@ -88,6 +93,7 @@ export const createOrder = async (req, res) => {
           id: orderData.id,
           order_number: orderData.order_number,
           total: orderData.total_price,
+          artist_name: orderData.line_items[0].vendor,
           currency: orderData.currency,
           customer_id: orderData.customer.id,
           created_at: orderData.created_at,
@@ -96,14 +102,28 @@ export const createOrder = async (req, res) => {
       );
 
       const lineItems = orderData.line_items.map((lineItem) => {
+        const parts = lineItem.name.split(" - ");
+        const [type, size, frames] = parts[1].split(" / ");
+        const vers = `${type}${frames}_${lineItem.title}`;
+        const sizeForUrl = size.replace(/\"|\s/g, "");
+        let imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${lineItem.vendor}/${lineItem.title}/shopify/${vers}.jpg`;
+        imageUrl = imageUrl.replace(/\s/g, "+");
+        let resizedImageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3${process.env.AWS_REGION}.amazonaws.com/${lineItem.vendor}/${lineItem.title}/${sizeForUrl}.jpg`;
+        resizedImageUrl = resizedImageUrl.replace(/ /g, "+");
         return {
           id: lineItem.id,
-          name: lineItem.name,
-          order_id: order.id,
-          product_id: lineItem.product_id,
-          variant_id: lineItem.variant_id,
+          name: lineItem.title,
+          order_id: order.id ?? "",
+          product_id: lineItem.product_id ?? null,
+          variant_id: lineItem.variant_id ?? null,
           quantity: lineItem.quantity ?? 1,
-          price: lineItem.price ?? 0,
+          price: parseFloat(lineItem.price) || 0,
+          size: size ?? "",
+          type: type ?? "",
+          frames: frames ?? "",
+          imageUrl,
+          resizedImageUrl,
+          sku: lineItem.sku ?? "",
         };
       });
       await LineItems.bulkCreate(lineItems, { transaction });
