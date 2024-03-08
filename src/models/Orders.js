@@ -23,6 +23,10 @@ export const Orders = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    artist_name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     customer_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
