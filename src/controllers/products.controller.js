@@ -60,6 +60,23 @@ async function processAndFramePhoto(
   }
 }
 
+/**
+ * The function `createVariantsImages` generates variant images for different editions and framings of
+ * a product using provided file, artist, editions, and product name.
+ * @param file - The `file` parameter is the image file that will be processed and framed to create
+ * variants images.
+ * @param artist - The `artist` parameter in the `createVariantsImages` function represents the artist
+ * who created the artwork for which variants images are being generated.
+ * @param editions - It looks like you forgot to provide the `editions` parameter in your message.
+ * Could you please provide the details for the `editions` parameter so I can assist you further with
+ * the `createVariantsImages` function?
+ * @param productName - productName is a string representing the name of the product for which variants
+ * images are being created.
+ * @returns The function `createVariantsImages` is returning an object `variantsImages` that contains
+ * processed and framed photos for each combination of edition and frame. The keys of the object are in
+ * the format `${edition.display}-` and the values are the result of processing and framing the
+ * photo using the `processAndFramePhoto` function.
+ */
 async function createVariantsImages(file, artist, editions, productName) {
   const variantsImages = {};
   for (let edition of editions) {
@@ -101,6 +118,27 @@ async function createImagesToPrint(
   }
 }
 
+/**
+ * The function `createProductAndVariants` creates a product and its variants in a Shopify store using
+ * provided data and images.
+ * @param shopifyProduct - The `shopifyProduct` parameter in the `createProductAndVariants` function
+ * likely represents a product object retrieved from a Shopify store. It contains information about a
+ * specific product, such as its ID, title, description, images, variants, vendor, and other details.
+ * This object is used as
+ * @param transaction - The `transaction` parameter in the `createProductAndVariants` function is used
+ * to ensure that all database operations within the function are executed as part of a single
+ * transaction. This helps maintain data integrity by ensuring that either all operations are
+ * successfully completed or none of them are committed to the database.
+ * @param body - The `body` parameter in the `createProductAndVariants` function represents an object
+ * containing additional information about the product being created. It may include properties like
+ * `title`, `description`, and `price` that can be used to override the corresponding values from the
+ * `shopifyProduct` object.
+ * @param imageUrl - The `imageUrl` parameter in the `createProductAndVariants` function is used to
+ * specify the image URL for the product being created. This URL will be used as the image for the
+ * product in the database. If the `imageUrl` parameter is provided, it will be used as the image URL
+ * @returns The function `createProductAndVariants` returns the newly created product as a plain
+ * JavaScript object.
+ */
 export const createProductAndVariants = async (
   shopifyProduct,
   transaction,
@@ -117,15 +155,18 @@ export const createProductAndVariants = async (
     where: { full_name: shopifyProduct.vendor },
     raw: true,
   });
-  if (!artist && shopifyProduct.vendor && shopifyProduct.vendor !== '') {
-    artist = await Artists.create({ full_name: shopifyProduct.vendor }, { transaction });
+  if (!artist && shopifyProduct.vendor && shopifyProduct.vendor !== "") {
+    artist = await Artists.create(
+      { full_name: shopifyProduct.vendor },
+      { transaction }
+    );
   }
   const product = await Products.create(
     {
       id: shopifyProduct.id,
       title: body?.title ?? shopifyProduct.title,
       description: body?.description ?? shopifyProduct.body_html,
-      image_url: imageUrl ?? shopifyProduct.images[0].src ?? '',
+      image_url: imageUrl ?? shopifyProduct.images[0].src ?? "",
       price: body?.price ?? shopifyProduct.variants[0].price,
       quantity: 1000,
       artist_id: artist.id,
@@ -139,7 +180,7 @@ export const createProductAndVariants = async (
         title: variant.title,
         product_id: product.id,
         option1: variant.option1,
-        option2: variant.option2.replace(/"/g, ''),
+        option2: variant.option2.replace(/"/g, ""),
         option3: variant.option3,
         price: variant.price,
         sku: variant.sku,
@@ -147,7 +188,9 @@ export const createProductAndVariants = async (
         edition_id: editions.find(
           (edition) => edition.display === variant.option1
         ).id,
-        size_id: sizes.find((size) => size.display === variant.option2.replace(/"/g, '')).id,
+        size_id: sizes.find(
+          (size) => size.display === variant.option2.replace(/"/g, "")
+        ).id,
         created_at: variant.created_at,
         updated_at: variant.updated_at,
       };
@@ -157,6 +200,14 @@ export const createProductAndVariants = async (
   return product.get({ plain: true });
 };
 
+/**
+ * The function `findMissingProducts` filters out products that do not exist in the database based on
+ * their IDs.
+ * @param products - The `findMissingProducts` function takes an array of product IDs as input and then
+ * queries the database to find the existing products based on those IDs. It then returns an array of
+ * product IDs that are missing from the database.
+ * @returns An array of product IDs that are missing from the database.
+ */
 export const findMissingProducts = async (products) => {
   const existingProducts = await Products.findAll({
     where: { id: { [Op.in]: products } },
