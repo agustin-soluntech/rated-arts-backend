@@ -5,6 +5,9 @@ import artistsRouter from "./artist.routes.js";
 import sizesRouter from "./size.routes.js";
 import ordersRouter from "./orders.routes.js";
 import { uploadFile } from "../utils/uploadFile.js";
+/* This JavaScript code is setting up a router using Express.js to handle different routes related to
+products, editions, artists, sizes, and orders. It is also defining a route to upload files to an S3
+bucket. Here's a breakdown of what each part of the code is doing: */
 const router = express.Router();
 
 router.use("/products", productsRouter);

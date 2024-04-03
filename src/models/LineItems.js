@@ -4,6 +4,8 @@ import { Orders } from "./Orders.js";
 import { Products } from "./Products.js";
 import { Variants } from "./Variants.js";
 
+/* This block of code is defining a Sequelize model for LineItems in a database schema. Let's break
+down what each part of the code is doing: */
 export const LineItems = sequelize.define("line_items", {
   id: {
     type: DataTypes.BIGINT,

@@ -1,3 +1,7 @@
+/**
+ * The above function initializes a Node.js server, connects to a database using Sequelize, and listens
+ * for incoming requests on a specified port.
+ */
 import dotenv from "dotenv";
 import app from "./app.js";
 import { sequelize } from "./database/database.js";

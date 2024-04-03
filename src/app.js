@@ -1,3 +1,5 @@
+/* This code snippet is setting up a basic Express server in a Node.js environment. Here's a breakdown
+of what each part is doing: */
 import express from "express";
 import routes from "./routes/index.js";
 import cors from "cors";

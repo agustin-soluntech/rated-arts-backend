@@ -2,6 +2,10 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
 import { Orders } from "./Orders.js";
 
+/* This code snippet is defining a Sequelize model for a table named "customers" in the database. The
+model specifies the structure of the "customers" table with various columns such as id, first_name,
+last_name, email, phone, address, city, province, zip, and country. Each column has a specified data
+type and constraints like allowNull and primaryKey. */
 export const Customers = sequelize.define("customers", {
   id: {
     type: DataTypes.BIGINT,

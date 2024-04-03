@@ -5,6 +5,8 @@ import { Artists } from "./Artists.js";
 import { LineItems } from "./LineItems.js";
 import { ProductImages } from "./ProductImages.js";
 
+/* This block of code is defining a Sequelize model for a table named "products" in a database. Here's
+a breakdown of what each part of the code is doing: */
 export const Products = sequelize.define("products", {
   id: {
     type: DataTypes.BIGINT,
@@ -40,7 +42,7 @@ export const Products = sequelize.define("products", {
 Products.belongsToMany(Sizes, { through: "ProductSize" });
 Sizes.belongsToMany(Products, { through: "ProductSize" });
 
-Products.belongsTo(Artists, { as: "Artist", foreignKey: "artist_id"});
+Products.belongsTo(Artists, { as: "Artist", foreignKey: "artist_id" });
 
 Products.hasMany(LineItems, { as: "LineItems", foreignKey: "product_id" });
 Products.hasMany(ProductImages, {

@@ -3,6 +3,8 @@ import { sequelize } from "../database/database.js";
 import { Variants } from "./Variants.js";
 import { Products } from "./Products.js";
 
+/* This block of code is defining a Sequelize model for editions in a database schema. Let's break it
+down step by step: */
 export const Editions = sequelize.define(
   "editions",
   {

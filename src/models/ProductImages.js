@@ -2,6 +2,8 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
 import { Sizes } from "./Sizes.js";
 
+/* This block of code is defining a Sequelize model named `ProductImages` that represents a table in
+the database. Here's a breakdown of what each part does: */
 export const ProductImages = sequelize.define("product_images", {
   id: {
     type: DataTypes.BIGINT,

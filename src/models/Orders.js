@@ -3,6 +3,8 @@ import { sequelize } from "../database/database.js";
 import { LineItems } from "./LineItems.js";
 import { Customers } from "./Customers.js";
 
+/* This block of code is defining a Sequelize model for the "orders" table in a database. Let me break
+it down for you: */
 export const Orders = sequelize.define(
   "orders",
   {
