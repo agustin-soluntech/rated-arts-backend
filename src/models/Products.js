@@ -1,44 +1,56 @@
-import {DataTypes} from 'sequelize'
-import {sequelize} from '../database/database.js'
-import { Size } from './Size.js';
-import { Editions } from './Editions.js';
-import { Artist } from './Artist.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "../database/database.js";
+import { Sizes } from "./Sizes.js";
+import { Artists } from "./Artists.js";
+import { LineItems } from "./LineItems.js";
+import { ProductImages } from "./ProductImages.js";
 
+/* This block of code is defining a Sequelize model for a table named "products" in a database. Here's
+a breakdown of what each part of the code is doing: */
+export const Products = sequelize.define("products", {
+  id: {
+    type: DataTypes.BIGINT,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  image_url: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  price: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  quantity: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+  },
+  artist_id: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+  },
+});
 
-export const Products = sequelize.define('products', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
-    title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    description: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-    },
-    image_url: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    price: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-    },
-    quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    }
-})
+Products.belongsToMany(Sizes, { through: "ProductSize" });
+Sizes.belongsToMany(Products, { through: "ProductSize" });
 
-Products.belongsToMany(Size, { through: 'ProductSize' });
-Size.belongsToMany(Products, { through: 'ProductSize' });
+Products.belongsTo(Artists, { as: "Artist", foreignKey: "artist_id" });
 
-Products.belongsToMany(Editions, { through: 'ProductEdition' });
-Editions.belongsToMany(Products, { through: 'ProductEdition' });
+Products.hasMany(LineItems, { as: "LineItems", foreignKey: "product_id" });
+Products.hasMany(ProductImages, {
+  as: "ProductImages",
+  foreignKey: "product_id",
+});
 
+Artists.hasMany(Products, { as: "Products", foreignKey: "artist_id" });
 
-Products.belongsTo(Artist, { as: 'Artist' });
-Artist.hasOne(Products, { as: 'Product' });
+LineItems.belongsTo(Products, { as: "Product", foreignKey: "product_id" });
+ProductImages.belongsTo(Products, { as: "Product", foreignKey: "product_id" });
